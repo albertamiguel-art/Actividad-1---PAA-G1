@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulador 1_AZUL – Matemáticas</title>
+<style>
+:root{--bg:#f4f7fc;--card:#fff;--tx:#14213d;--mu:#5b6b88;--ac:#1d4ed8;--ok:#15803d;--ko:#b91c1c;--bd:#d5deee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f172a;--card:#1e293b;--tx:#e8eefc;--mu:#9fb0d0;--ac:#60a5fa;--ok:#4ade80;--ko:#f87171;--bd:#334155}}
+:root[data-theme="dark"]{--bg:#0f172a;--card:#1e293b;--tx:#e8eefc;--mu:#9fb0d0;--ac:#60a5fa;--ok:#4ade80;--ko:#f87171;--bd:#334155}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:1.6rem;margin:.2em 0}
+.sub{color:var(--mu);margin:0 0 16px}
+.q{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin:12px 0}
+.q p{margin:0 0 8px;font-weight:600}
+label{display:block;padding:7px 10px;border:1px solid var(--bd);border-radius:8px;margin:6px 0;cursor:pointer}
+label:hover{border-color:var(--ac)}
+input{margin-right:8px}
+.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,transparent)}
+.ko{border-color:var(--ko);background:color-mix(in srgb,var(--ko) 15%,transparent)}
+.ex{display:none;color:var(--mu);font-size:.92rem;margin-top:6px}
+button{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:12px 22px;font-size:1rem;cursor:pointer;margin:6px 8px 0 0}
+button.s{background:transparent;color:var(--ac);border:1px solid var(--ac)}
+#res{font-size:1.2rem;font-weight:700;margin:14px 0}
+</style></head><body><main>
+<h1>Simulador 1_AZUL · Matemáticas</h1>
+<p class="sub">25 reactivos · Elige la única respuesta correcta y pulsa «Calificar».</p>
+<div id="qs"></div>
+<button onclick="grade()">Calificar</button><button class="s" onclick="location.reload()">Reiniciar</button>
+<div id="res"></div>
+</main>
+<script>
+const VENN='<svg viewBox="0 0 400 380" role="img" aria-label="Diagrama de Venn de tres conjuntos T, A y P" style="width:100%;max-width:380px;display:block;margin:8px auto;color:var(--tx)"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="150" cy="140" r="105"/><circle cx="250" cy="140" r="105"/><circle cx="200" cy="225" r="105"/></g><g fill="currentColor" font-family="system-ui,sans-serif" text-anchor="middle"><text x="55" y="30" font-size="16">T</text><text x="345" y="30" font-size="16">A</text><text x="200" y="372" font-size="16">P</text><g font-size="22"><text x="105" y="122">28</text><text x="295" y="122">20</text><text x="200" y="298">32</text><text x="200" y="108">24</text><text x="148" y="205">7</text><text x="252" y="205">9</text><text x="200" y="168">4</text></g></g></svg>';
+const Q=[
+["En los círculos del diagrama siguiente se indica la cantidad de trabajadores de una compañía que usan cada medio de transporte. El círculo T representa a los que usan el tren, el A a los que usan el autobús y el P a los que usan su propio automóvil. ¿Cuántos trabajadores usan EXCLUSIVAMENTE su propio automóvil?",["7","9","32","72"],2,"Es la región que está solo dentro del círculo P, sin cruzarse con T ni A: 32.",VENN],
+["El pan viene en empaques para 20 hamburguesas y la carne en empaques para 15. ¿Cuál es la cantidad mínima de empaques de cada uno para que no sobre nada?",["3 de pan y 4 de carne","4 de pan y 3 de carne","5 de pan y 5 de carne","15 de pan y 20 de carne"],0,"mcm(20,15)=60; 60÷20=3 y 60÷15=4."],
+["La razón de tortugas a pájaros es 1:3 y la de conejos a pájaros es 2:3. Si hay 4 tortugas, ¿cuántos conejos hay?",["4","6","8","12"],2,"Pájaros=12; conejos=12·2/3=8."],
+["Un televisor cuesta $4,800 y tiene 30% de descuento. ¿Cuál es el precio con descuento?",["$1,440","$3,360","$4,500","$4,770"],1,"4,800·0.70=3,360."],
+["Ana gana $2,400 mensuales y gasta 3/8 partes en renta. ¿Cuánto paga de renta?",["$600","$800","$900","$1,500"],2,"2,400÷8=300; 300·3=900."],
+["El número 6 es el 75% de",["4.5","8","10","12"],1,"6÷0.75=8."],
+["Un equipo ganó el 50% de sus primeros 40 partidos. Si en total jugó 100 y ganó el 70% de los restantes, ¿qué porcentaje del total ganó?",["60","62","64","66"],1,"20+42=62 de 100."],
+["El precio sin impuesto de un artículo es $200. Debía cobrarse 9% de impuesto, pero se cobró 10%. ¿Cuánto se pagó de más?",["$1","$2","$18","$20"],1,"1% de 200 = 2."],
+["Marcos debe leer una novela de 372 páginas. Ya leyó 48 y leerá 18 por día. Su examen es en 4 semanas. ¿Cuántos días antes del examen terminará?",["4","10","18","28"],1,"324÷18=18 días; 28−18=10."],
+["Tres amigos van al gimnasio cada 4, 6 y 9 días. Coincidieron el 5 de abril. ¿Cuándo volverán a coincidir?",["10 de mayo","11 de mayo","12 de mayo","13 de mayo"],1,"mcm=36 días; 5 abr+36 = 11 may."],
+["Cuatro personas pueden formarse en fila de 24 maneras distintas. ¿De cuántas formas pueden formarse 5 personas?",["20","60","100","120"],3,"5!=120."],
+["¿Cuál es la mediana de los datos 9, 3, 1, 8, 5?",["3","5","8","9"],1,"Ordenados: 1,3,5,8,9."],
+["En una bolsa hay 50 caramelos: 20 de fresa, 12 de limón y el resto de uva. Si se elige uno al azar, ¿cuál es la probabilidad de que sea de uva?",["12/50","18/50","20/50","32/50"],1,"Uva = 50−32 = 18."],
+["Resultados de un examen — Aprobaron: 25 hombres, 35 mujeres. Reprobaron: 15 hombres, 25 mujeres. Si se elige al azar a una persona que reprobó, ¿cuál es la probabilidad de que sea mujer?",["25/40","25/60","25/100","15/40"],0,"Reprobados=40; mujeres=25."],
+["Un programa tiene cinco secciones; siempre inicia con la apertura y las otras cuatro pueden ir en cualquier orden. ¿De cuántas maneras se puede organizar?",["4","12","24","120"],2,"4!=24."],
+["¿Cuál de los siguientes grupos de datos tiene desviación estándar igual a 0?",["2, 4, 6, 8","7, 7, 7, 7, 7","1, 2, 1, 2","−1, 0, 1"],1,"Todos los datos iguales."],
+["Una escalera de 13 pies se apoya en una pared y su base está a 5 pies de ella. ¿Qué altura alcanza, en pies?",["8","10","12","18"],2,"√(13²−5²)=12."],
+["El pollo tiene 20 g de proteína y 5 g de grasa por porción; el aguacate tiene 2 g de proteína y 15 g de grasa por porción. ¿Cuántas porciones de cada uno suman exactamente 24 g de proteína y 35 g de grasa?",["1 de pollo y 1 de aguacate","1 de pollo y 2 de aguacate","2 de pollo y 1 de aguacate","2 de pollo y 2 de aguacate"],1,"20+4=24 y 5+30=35."],
+["El corazón de un conejo late 15 veces cada 10 segundos. ¿Cuántas veces late en un minuto?",["60","90","100","150"],1,"15·6=90."],
+["La distancia entre (3, a) y (3, −2) es 6. ¿Cuáles son los posibles valores de a?",["4 y −8","−4 y 8","4 y 8","−4 y −8"],0,"|a+2|=6 → a=4 o a=−8."],
+["En una tienda cada grupo puede tener como máximo 50 personas. Si x es el número de personas, ¿qué opción describe la situación?",["x < 50","x ≤ 50","x ≥ 50","x = 50"],1,"«Máximo 50» es x ≤ 50."],
+["El número de chirridos C por minuto de un grillo es directamente proporcional a la temperatura T (°F), con constante 5. Si hay 145 chirridos, ¿cuál es la temperatura?",["29","30","140","725"],0,"T=145÷5=29."],
+["Una pirámide tiene volumen 900 cm³ y altura 12 cm. ¿Cuál es el área de su base, en cm²?",["75","150","225","300"],2,"B=3V/h=2700/12=225."],
+["Si x² − x = 56, los valores de x que satisfacen la ecuación son:",["8 y −7","−8 y 7","8 y 7","−8 y −7"],0,"(x−8)(x+7)=0."],
+["El largo de un rectángulo mide 3 cm más que su ancho. Si su área es 108 cm², ¿cuánto mide su largo, en cm?",["9","10","12","13"],2,"w(w+3)=108 → w=9, largo=12."]
+];
+const box=document.getElementById('qs');
+Q.forEach((q,i)=>{const d=document.createElement('div');d.className='q';
+d.innerHTML='<p>'+(i+1)+'. '+q[0]+'</p>'+(q[4]||'')+q[1].map((o,j)=>'<label id="l'+i+'_'+j+'"><input type="radio" name="q'+i+'" value="'+j+'">'+'ABCD'[j]+') '+o+'</label>').join('')+'<div class="ex" id="e'+i+'">Solución: '+q[3]+'</div>';
+box.appendChild(d);});
+function grade(){let s=0;Q.forEach((q,i)=>{const c=document.querySelector('input[name=q'+i+']:checked');
+document.getElementById('l'+i+'_'+q[2]).classList.add('ok');
+if(c){if(+c.value===q[2])s++;else document.getElementById('l'+i+'_'+c.value).classList.add('ko');}
+document.getElementById('e'+i).style.display='block';});
+document.getElementById('res').textContent='Resultado: '+s+' / 25 ('+Math.round(s*4)+'%)';
+document.getElementById('res').scrollIntoView({behavior:'smooth'});}
+</script></body></html>
